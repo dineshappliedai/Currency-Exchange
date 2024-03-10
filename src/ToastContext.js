@@ -52,13 +52,6 @@ const ToastContainer = ({ toasts }) => (
     </div>
 );
 
-// const containerStyle = {
-//     position: 'fixed',
-//     bottom: '20px',
-//     right: '20px',
-//     zIndex: 1000,
-// };
-
 const containerStyle = {
     position: 'fixed',
     top: '20px',
