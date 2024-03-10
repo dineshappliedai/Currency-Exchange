@@ -1,0 +1,42 @@
+
+
+.currency-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+}
+
+.currency-label {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+}
+
+.currency-value {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    /* justify-content: space-between; */
+    gap: 50px;
+}
+
+.currency-row:first-child {
+    background-color: #007bff;
+    color: white;
+    margin-bottom: .125rem;
+}
+
+.currency-row:not(:first-child) {
+    background-color: #f9f9f9;
+}
+
+.currency-row:not(:first-child) .currency-label {
+    color: #333;
+}
