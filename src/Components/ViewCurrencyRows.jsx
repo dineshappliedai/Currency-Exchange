@@ -29,7 +29,7 @@ const CurrencyRow = ({ currency, exchangeRates, handleRemoveCurrency, comparison
                 })}
             </div>
             <div className="icon-container">
-            <Tooltip placement="bottom-end" title={comparisonCurrencies.length <= 3 ? "Minimum 3 currencies must be maintained" : ""}>
+            <Tooltip placement="top" title={comparisonCurrencies.length <= 3 ? "Minimum 3 currencies must be maintained" : ""}>
                 <div>
                 <IconButton disabled={comparisonCurrencies.length <= 3} aria-label="delete" onClick={() => handleRemoveCurrency(currency)}>
                     <DeleteIcon className={comparisonCurrencies.length <= 3 ? "DeleteIconDisable" : "DeleteIcon"} />

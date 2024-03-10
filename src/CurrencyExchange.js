@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Autocomplete, TextField, IconButton, Grid, Card, Typography, Tooltip } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import DatePicker from "react-datepicker";
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { Autocomplete, Card, Grid, IconButton, TextField, Tooltip, Typography } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import React, { useEffect, useState } from 'react';
 import "react-datepicker/dist/react-datepicker.css";
+import CustomDatePicker from './Components/CustomDatePicker';
+import CurrencyRow from './Components/ViewCurrencyRows';
+import { isToday } from './Components/helper';
 import "./CurrencyExchange.css";
 import { useToast } from './ToastContext';
-import Divider from '@mui/material/Divider';
-import RemoveIcon from '@mui/icons-material/Remove';
-import CircularProgress from '@mui/material/CircularProgress';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import CurrencyRow from './Components/ViewCurrencyRows';
+import { CURRENCIES_API, getCurrencyApiUrl } from './Components/EndPoints';
 
 
 function CurrencyExchange() {
@@ -36,7 +34,7 @@ function CurrencyExchange() {
     }, [baseCurrency, selectedDate, comparisonCurrencies]);
 
     const fetchCurrencies = async () => {
-        const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.json');
+        const response = await fetch(CURRENCIES_API);
         const data = await response.json();
         setCurrencies(data);
     };
@@ -51,8 +49,7 @@ function CurrencyExchange() {
             const dateString = date.toISOString().split('T')[0];
             isSuccess = false
             try {
-                const response = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${dateString}/v1/currencies/${baseCurrency.toLocaleLowerCase()}.json`);
-                // if (!response.ok) throw new Error('Failed to fetch');
+                const response = await fetch(getCurrencyApiUrl(dateString, baseCurrency.toLocaleLowerCase()));
                 if (response.status === 404) {
 
                     tempExchangeRates[dateString] = {}
@@ -62,23 +59,15 @@ function CurrencyExchange() {
                 isSuccess = true
             } catch (error) {
                 console.log(error);
-                isSuccess = false
-                console.log(`Data not available for ${dateString}`);
                 toast(` Data not avaliable for${dateString}`, "error")
                 // break;
             }
         }
         setExchangeRates(tempExchangeRates);
         setIsLoading(false);
-        console.log(tempExchangeRates);
-        // if (Object.keys(tempExchangeRates).length > 0 && isSuccess) {
-
-        //     toast(` Data Updated Successfully`, "success")
-        // }
     };
 
     const handleBaseCurrencyChange = (value) => {
-        console.log(value);
         if (!value) return;
         setBaseCurrency(value["key"]);
     };
@@ -89,12 +78,10 @@ function CurrencyExchange() {
     };
 
     const handleAddCurrency = (newValue) => {
-        console.log(newValue);
 
         const value = newValue?.key
         if (!value || comparisonCurrencies.includes(value) || comparisonCurrencies.length >= 7) return;
         setComparisonCurrencies([...comparisonCurrencies, value.toLowerCase()]);
-        // toast(`${newValue.toUpperCase()} Added`, "success")
     };
 
 
@@ -112,17 +99,7 @@ function CurrencyExchange() {
             newDate.setDate(newDate.getDate() - 1);
             return newDate;
         });
-        // Trigger any additional actions like fetching API data here
     };
-
-    const isToday = (someDate) => {
-        const today = new Date();
-        return someDate.getDate() === today.getDate() &&
-            someDate.getMonth() === today.getMonth() &&
-            someDate.getFullYear() === today.getFullYear();
-    };
-
-
 
     return (
         <Card className="currency-exchange-container">
@@ -132,7 +109,6 @@ function CurrencyExchange() {
                 </div>
             )}
 
-            {/* <Grid container  className='container'> */}
             <Grid className="currency-exchange-heading">
                 Currency Exchange
             </Grid>
@@ -142,7 +118,7 @@ function CurrencyExchange() {
                     <Typography variant='h5'>From: </Typography>
                     <Autocomplete
                         options={Object.entries(currencies).map(([key, value]) => ({ key, value }))}
-                        getOptionLabel={(option) => `${option.key} - ${option.value}`}
+                        getOptionLabel={(option) => `${option.key.toUpperCase()} - ${option.value}`}
                         renderInput={(params) => <TextField {...params} label="Base Currency" />}
                         value={currencies.hasOwnProperty(baseCurrency) ? { key: baseCurrency, value: currencies[baseCurrency] } : null}
 
@@ -152,63 +128,63 @@ function CurrencyExchange() {
                         fullWidth
                         sx={{
                             "& .MuiAutocomplete-inputRoot": {
-                                color: "info.main", // Example to style the input color
+                                color: "info.main",
                             }
                         }}
                     />
                 </Grid>
                 <Grid className="base-currency">
                     <Typography variant='h5'>To: </Typography>
-                    <Tooltip placement="right-start" title={comparisonCurrencies.length >= 7 ? "Maximum 7 currencies can be added" : ""}>
-                        <div style={{width:"25rem"}}>
-                    <Autocomplete
-                        id="add-currency"
-                        options={Object.entries(currencies)
-                            .map(([key, value]) => ({ key, value }))
-                            .filter(({ key }) => !comparisonCurrencies.includes(key))}
-                        getOptionLabel={(option) => `${option.key.toUpperCase()} - ${option.value}`}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Add Currency"
-                                variant="outlined"
+                    <Tooltip placement="top" title={comparisonCurrencies.length >= 7 ? "Maximum 7 currencies can be added" : ""}>
+                        <div style={{ width: "25rem" }}>
+                            <Autocomplete
+                                id="add-currency"
+                                options={Object.entries(currencies)
+                                    .map(([key, value]) => ({ key, value }))
+                                    .filter(({ key }) => !comparisonCurrencies.includes(key))}
+                                getOptionLabel={(option) => `${option.key.toUpperCase()} - ${option.value}`}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Add Currency"
+                                        variant="outlined"
+                                        fullWidth
+                                    />
+                                )}
+                                onChange={(event, newValue) => {
+                                    handleAddCurrency(newValue);
+                                }}
+                                isOptionEqualToValue={(option, value) => option.key === value.key}
+                                disabled={comparisonCurrencies.length >= 7}
                                 fullWidth
+                                sx={{
+                                    "& .MuiAutocomplete-inputRoot": {
+                                        color: "info.main",
+                                    }
+                                }}
                             />
-                        )}
-                        onChange={(event, newValue) => {
-                            handleAddCurrency(newValue);
-                        }}
-                        isOptionEqualToValue={(option, value) => option.key === value.key}
-                        disabled={comparisonCurrencies.length >= 7}
-                        fullWidth
-                        sx={{
-                            "& .MuiAutocomplete-inputRoot": {
-                                color: "info.main",
-                            }
-                        }}
-                    />
-                    </div>
+                        </div>
                     </Tooltip>
                 </Grid>
                 <Grid className='date'>
-                    <Typography variant='h6'> Date: </Typography>
+                    <Typography variant='h5'> Date: </Typography>
 
-                    <IconButton onClick={decrementDate}>
-                        <ArrowBackIosNewIcon />
-                    </IconButton>
+                    <Tooltip placement="top" title={"Previous Day"}>
 
+                        <IconButton onClick={decrementDate}>
+                            <ArrowBackIosNewIcon />
+                        </IconButton>
+                    </Tooltip>
                     <Grid item >
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={(date) => setSelectedDate(date)}
-                            className="date-picker-custom"
-                            maxDate={new Date()}
-                            minDate={new Date(new Date().setDate(new Date().getDate() - 90))}
-                        />
+                        <CustomDatePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+
                     </Grid>
-                    <IconButton disabled={isToday(selectedDate)} onClick={incrementDate} className='forwardArrow'>
-                        <ArrowForwardIosIcon />
-                    </IconButton>
+                    <Tooltip placement="top" title={"Next Day"}>
+
+                        <IconButton disabled={isToday(selectedDate)} onClick={incrementDate} className='forwardArrow'>
+                            <ArrowForwardIosIcon />
+                        </IconButton>
+                    </Tooltip>
                 </Grid>
 
             </Grid>
@@ -235,9 +211,6 @@ function CurrencyExchange() {
                 ))}
 
             </Grid>
-
-
-            {/* </Grid> */}
         </Card>
     );
 }
