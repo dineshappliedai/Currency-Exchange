@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import "react-datepicker/dist/react-datepicker.css";
 import CustomDatePicker from './Components/CustomDatePicker';
 import CurrencyRow from './Components/ViewCurrencyRows';
-import { isToday } from './Components/helper';
+import { isToday, ninetyDaysAgo } from './Components/helper';
 import "./CurrencyExchange.css";
 import { useToast } from './ToastContext';
 import { CURRENCIES_API, getCurrencyApiUrl } from './Components/EndPoints';
@@ -43,6 +43,7 @@ function CurrencyExchange() {
         setIsLoading(true);
         let isSuccess = false;
         let tempExchangeRates = {};
+        let errorDates = [];
         for (let i = 0; i < 7; i++) {
             const date = new Date(selectedDate);
             date.setDate(date.getDate() - i);
@@ -58,13 +59,19 @@ function CurrencyExchange() {
                 tempExchangeRates[dateString] = data[baseCurrency]
                 isSuccess = true
             } catch (error) {
-                console.log(error);
-                toast(` Data not avaliable for${dateString}`, "error")
+                errorDates.push(dateString);
                 // break;
             }
         }
         setExchangeRates(tempExchangeRates);
         setIsLoading(false);
+        if (errorDates.length) {
+            const message = `Caution: Few Data Not Available`;
+            toast(message, "error");
+        } 
+        else {
+            toast("Data updated successfully.", "success");
+        }
     };
 
     const handleBaseCurrencyChange = (value) => {
@@ -169,22 +176,22 @@ function CurrencyExchange() {
                 <Grid className='date'>
                     <Typography variant='h5'> Date: </Typography>
 
-                    <Tooltip placement="top" title={"Previous Day"}>
-
+                    <Tooltip placement="top" disabled={selectedDate <= ninetyDaysAgo} title={"Previous Day"}>
                         <IconButton onClick={decrementDate}>
                             <ArrowBackIosNewIcon />
                         </IconButton>
                     </Tooltip>
+
                     <Grid item >
                         <CustomDatePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-
                     </Grid>
-                    <Tooltip placement="top" title={"Next Day"}>
 
+                    <Tooltip placement="top" title={"Next Day"}>
                         <IconButton disabled={isToday(selectedDate)} onClick={incrementDate} className='forwardArrow'>
                             <ArrowForwardIosIcon />
                         </IconButton>
                     </Tooltip>
+
                 </Grid>
 
             </Grid>

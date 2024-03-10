@@ -1,4 +1,3 @@
-// CurrencyRow.test.js
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import CurrencyRow from './ViewCurrencyRows';
@@ -28,7 +27,7 @@ describe('CurrencyRow', () => {
         currency="usd"
         exchangeRates={{ '2021-01-01': { usd: 1.1 }, '2021-01-02': { usd: 1.2 } }}
         handleRemoveCurrency={mockHandleRemoveCurrency}
-        comparisonCurrencies={['usd', 'eur', 'jpy']} // Only 3 currencies
+        comparisonCurrencies={['usd', 'eur', 'jpy']}
       />
     );
 
